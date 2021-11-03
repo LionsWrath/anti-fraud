@@ -16,6 +16,12 @@ class AntiFraudAPI(Resource):
     def __init__(self, **kwargs):
 
         self.orchestrator = kwargs['orchestrator']
+
+        if 'add_results' in kwargs:
+            self.add_results  = kwargs['add_results']
+        else:
+            self.add_results  = False
+
         self.transaction_schema = TransactionSchema()
 
         super(AntiFraudAPI, self).__init__()
@@ -28,6 +34,13 @@ class AntiFraudAPI(Resource):
             transaction = self.transaction_schema.load(request_data)
         except ValidationError as err:
             return make_response(jsonify(err.messages), 400)
+
+        if self.add_results:
+            return jsonify({ 
+                'transaction_id' : transaction['transaction_id'],
+                'recommendation' : 'approve' if self.orchestrator.validate(transaction) else 'deny',
+                'validators'     : self.orchestrator.get_results()
+            })
 
         return jsonify({ 
             'transaction_id' : transaction['transaction_id'],

@@ -4,12 +4,12 @@ class Orquestrator():
 
     def __init__(self):
 
-        self.validators = []
-        self.operator   = lambda x,y : x and y
+        self.validators = {}
+        self.operator   = lambda x : reduce(lambda a,b : a and b, x.values()) 
 
-    def addValidator(self, validator):
+    def addValidator(self, name, validator):
 
-        self.validators.append(validator)
+        self.validators[name] = validator
 
     def overwriteOperator(self, operator):
         
@@ -20,5 +20,15 @@ class Orquestrator():
         self.validators.clear()
 
     def validate(self, transaction):
+        
+        self._call_validators(transaction)
 
-        return reduce(self.operator, [ val.validate(transaction) for val in self.validators ])
+        return self.operator(self.results)
+
+    def _call_validators(self, transaction):
+
+        self.results = { key : val.validate(transaction) for key,val in self.validators.items() }
+
+    def get_results(self):
+        
+        return self.results
