@@ -1,0 +1,7 @@
+pyspark
+flask
+flask-restplus
+pytest
+delta-spark
+openjdk
+marshmallow
